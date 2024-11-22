@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link href="/css/output.css" rel="stylesheet">
+    <link href="/css/custom.css" rel="stylesheet"> <!-- Custom styles -->
+    <link rel="stylesheet" href="/css/fontawesome-pro/css/all.min.css">
+</head>
+<body class="bg-gray-100 flex flex-col justify-between h-screen">
+    <div id="alertSuccess" class="alert hidden">Success! Your action was completed.</div>
+    <div id="alertError" class="alert hidden">Error! Something went wrong.</div>
+    <!-- Header -->
+    <header class="header bg-blue-600 text-white p-4 flex justify-between items-center ">
+        <div class="logo">
+            <img src="/img/logo.png" alt="Logo" class="bg-white p-1 rounded-full w-14 ">
+        </div>
+        
+        <nav class="navigation-menu">
+            <ul class="flex space-x-4">
+                <li><a href="/dashboard" class="text-xl hover:underline hover:font-bold">Home</a></li>
+                <li><a href="/vote" class="text-xl hover:underline hover:font-bold">Vote Now</a></li>
+                <li><a href="/vote/results" class="text-xl hover:underline hover:font-bold">Results</a></li>
+                <li><a href="/profile" class="text-xl hover:underline hover:font-bold">Profile</a></li>
+                <li><a href="/logout" class="text-xl hover:underline hover:font-bold">Logout</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <!-- Main Content Area -->
+    <div class="flex flex-1">
+        <!-- Optional Sidebar -->
+        <aside class="bg-gray-300 w-1/4 max-w-xs p-4 sidebar">
+            <nav>
+                <ul class="space-y-2">
+                    <li><a href="/dashboard" class="block py-2 px-4 bg-blue-500 text-white rounded">Dashboard</a></li>
+                    <li><a href="/vote" class="block py-2 px-4 hover:bg-blue-500 hover:text-white rounded">Vote Now</a></li>
+                    <li><a href="/vote/results" class="block py-2 px-4 hover:bg-blue-500 hover:text-white rounded">Voting Results</a></li>
+                    <li><a href="/profile" class="block py-2 px-4 hover:bg-blue-500 hover:text-white rounded">Profile</a></li>
+                    <li><a href="/logout" class="block py-2 px-4 hover:bg-blue-500 hover:text-white rounded">Logout</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Dashboard Area -->
+        <main class="p-8 flex-1 main-content">
+            <!-- Voting Status -->
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4">Voting Status</h2>
+                <div class="bg-yellow-100 text-yellow-800 p-4 rounded">
+                    <% if (user.election_id) { %>
+                        <h2 class="text-xl font-semibold mb-2">Current Election</h2>
+                        <p><strong>Election Name:</strong> <%= user.election_name %></p>
+                        <p><strong>Start Date:</strong> <%= new Date(user.start_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+                        <p><strong>End Date:</strong> <%= new Date(user.end_date).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }) %></p>
+                
+                        <% if (!user.has_voted) { %>
+                            <% if (!isCandidate) { %>
+                                <button id="voteButton" class="text-blue-600 font-bold underline">Vote Now</button>
+                            <% } else { %>
+                                <p class="text-red-400 font-bold">You cannot vote because you are contesting for the position of <%= positionName %>.</p>
+                            <% } %>
+                        <% } else { %>
+                            <p>You have already voted in this election.</p>
+                        <% } %>
+                    <% } else { %>
+                        <p>No active elections to vote in at this time.</p>
+                    <% } %>
+                </div>
+            </section>
+
+            <!-- Recent Announcements or Updates -->
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4">Recent Announcements</h2>
+                <div class="bg-white p-4 rounded shadow">
+                    <p>No new announcements.</p>
+                </div>
+            </section>
+
+            <!-- Voting History -->
+            <section class="mb-8">
+                <h2 class="text-xl font-semibold mb-4">Voting History</h2>
+                <div class="bg-white p-4 rounded shadow">
+                    <p>You have <%= user.hasVoted ? 'participated' : 'not participated' %> in any previous votes.</p>
+                </div>
+            </section>
+
+            <!-- Profile Information -->
+            <section>
+                <h2 class="text-xl font-semibold mb-4">Your Profile</h2>
+                <div class="bg-white p-4 rounded shadow">
+                    <p><strong>Name:</strong> <%= user.first_name %> <%= user.last_name %></p>
+                    <p><strong>Student Number:</strong> <%= user.student_number %></p>
+                    <p><strong>Email:</strong> <%= user.email %></p>
+                    <p><strong>Class:</strong> <%= user.class %></p>
+                    <a href="/profile" class="text-blue-500 font-bold underline">Update Profile</a>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer bg-gray-800 text-white p-4 text-center">
+        <p>&copy; 2024 Malawi University of Business and Applied Sciences. All rights reserved.</p>
+        <p>Contact Support: support@mubas.ac.mw | +265-1-234-567</p>
+    </footer>
+
+    <!-- Voting Modal -->
+    <div id="fingerprintModal" class="fixed inset-0 items-center justify-center bg-black bg-opacity-50 hidden fingerprint-modal">
+        <div class="bg-white rounded-lg p-8 w-96 text-center">
+            <!-- Fingerprint Icon -->
+            <i class="fa-thin fa-fingerprint text-6xl text-blue-500 mb-4" id="fingerprintIcon"></i>
+            <h2 class="text-lg font-semibold mb-4">Fingerprint Verification</h2>
+            <div id="fingerprintStatus" class="text-blue-500 font-bold mb-4"></div>
+            <button id="retryButton" class="bg-blue-500 text-white py-2 px-4 rounded hidden">Retry</button>
+            <button id="closeButton" class="bg-red-500 text-white py-2 px-4 rounded">Close</button>
+        </div>
+    </div>
+
+</body>
+
+<script src="/js/voteNow.js"></script>
+
+</html>
